@@ -37,7 +37,7 @@ I start by preparing "object points", which will be the (x, y, z) coordinates of
 
 I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result: 
 
-![alt text](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/raw/master/output_images/camera_cali/undistort_test_imgage.png)
+![alt text](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/raw/master/output_images/camera_cali/undistort_test_imgage2.png)
 
 ### Pipeline (single images)
 
@@ -45,6 +45,7 @@ I then used the output `objpoints` and `imgpoints` to compute the camera calibra
 
 To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
 ![alt text](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/raw/master/test_images/test1.jpg)
+
 For this image, I used `cv2.undistort()` function to undistort. The result of the undistortiong:
 ![alt text](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/raw/master/output_images/camera_cali/undistort_test_imgage.png)
 
@@ -83,7 +84,9 @@ I verified that my perspective transform was working as expected by drawing the 
 Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this(origial image is the test1.jpg like above):
 
 ![alt text](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/Lane_line_withband_test1.jpg)
+
 To get the lane lines image like the above one, I need to take some steps to dect the pixles in the line region.
+
 For the first frame:
 1) I need to fistly find where the left and right lane lines are. So I take a histogram of the bottom half of the image.
 2) I take the peak positions of the left and right halves of the histogram as the starting position of the left and right lines.
@@ -116,7 +119,7 @@ If the difference is negative, the car is on the left side of the lane center,an
 
 I implemented this step in lines # through # in my code in `Advanced_Lane_Line_Finding.ipynb` in the function `draw_lane()` and draw_data().  Here is an example of my result on a test image:
 
-![alt text][image6]
+![alt text](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/raw/master/output_images/binary_Lane_lines/warped_inverse_test1.jpg)
 
 ---
 
@@ -124,7 +127,7 @@ I implemented this step in lines # through # in my code in `Advanced_Lane_Line_F
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./project_video.mp4)
+Here's a [https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/project_video.mp4](./project_video.mp4)
 
 ---
 
@@ -133,3 +136,14 @@ Here's a [link to my video result](./project_video.mp4)
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
 Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+I define a class named Line() to store all the line data. 
+The pipeline inludes all the steps:
+1) Undistort the images 
+2) Transform the undistorted image into binary warped image
+3) Detect the left and right line pixls and apply 2nd polyfit to them 
+4) Append the line data to the line class
+5) Draw the lines using best_fit attribute of line classes on the undistorted image.
+6) Draw the data on the above image.
+
+For the above approach, it fails when there is deep shallow and the line is much unclear.
+To make it more robust, I need to take automatically detect the source four points in perspective transform step. And I need to improve the lane line detection using different color sapce to make the lines more clear.
