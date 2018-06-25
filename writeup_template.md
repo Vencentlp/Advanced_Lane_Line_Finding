@@ -76,21 +76,45 @@ The following source and destination points are as follows:
 
 I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
 
-![alt text][image4]
+![alt text](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/raw/master/output_images/warptest1.png)
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this(origial image is the test1.jpg like above):
 
-![alt text][image5]
+![alt text](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/Lane_line_withband_test1.jpg)
+To get the lane lines image like the above one, I need to take some steps to dect the pixles in the line region.
+For the first frame:
+1) I need to fistly find where the left and right lane lines are. So I take a histogram of the bottom half of the image.
+2) I take the peak positions of the left and right halves of the histogram as the starting position of the left and right lines.
+3) Define a window to slide over the line positions to detect line pixles.
+4) Slide the window step by step
+5) Recenter the window by averaging all the pixles in the window.
+6) Concatenate all the found pixles
+7) Aplly 2nd polyfit to the pixles found
+
+For the next frame:
+I do not need to search the lane lines by sliding windows for that the line position has been determined. All I need to do is to search near the lines found before. After line pixles were found, I applied 2nd polyfit to them.
+All the code can be found in code cell 37th and 38th.
+
 
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-I did this in lines # through # in my code in `my_other_file.py`
+I did this in 39th code cell in 'Advanced_Lane_Line_Finding.ipynb'
+To calculate the curvature,t he steps are as following:
+1)I first transform the coordinate unit of line pixls found from unit pixle into meter.
+2)Then I take a 2nd polyfit for all the points in meter.
+3) I calculated the curvature using the formula in the class
+
+To calculate the position of the vehicle with respect to the center, I take the following steps:
+1) Assume that the car in the middle of the image 
+2) Calculate the middle postion between the left and right lines
+3) Calculate the difference of the above 2.
+If the difference is negative, the car is on the left side of the lane center,and vice versa.
 
 #### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+I implemented this step in lines # through # in my code in `Advanced_Lane_Line_Finding.ipynb` in the function `draw_lane()` and draw_data().  Here is an example of my result on a test image:
 
 ![alt text][image6]
 
