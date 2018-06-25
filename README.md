@@ -205,6 +205,10 @@ for image in images:
 The result is:
 ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/binarytest1.jpg)
 ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/binarytest2.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/binarytest3.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/binarytest4.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/binarytest5.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/binarytest6.jpg)
 
 ## Perspective transform
 The code for my perspective transform includes a function called `warp()`. The `warp()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points manually:
@@ -278,6 +282,7 @@ plt.savefig('output_images/'+'warp'+'test1')
 ```
 ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/warptest1.png)
 
+
 ### Binary warped test images
 ```
 # Read in the test images
@@ -300,6 +305,10 @@ for image in images:
 ```
 ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/warptest1.jpg)
 ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/warptest2.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/warptest3.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/warptest4.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/warptest5.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/warptest6.jpg)
 
 ## Detect lane pixels and fit to find the lane boundary.
 To get the lane lines image like the above one, I need to take some steps to dect the pixles in the line region.
@@ -473,6 +482,9 @@ for image in images:
 ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/Lane_line_withband_straight_lines1.jpg)
 ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/Lane_line_withband_test2.jpg)
 ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/Lane_line_withband_test3.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/Lane_line_withband_test4.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/Lane_line_withband_test5.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/Lane_line_withband_test6.jpg)
 
 
 ## Calculate curvature and center distance
