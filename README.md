@@ -12,7 +12,7 @@ The goals / steps of this project are the following:
 
 The images for camera calibration are stored in the folder called `camera_cal`.  The images in `test_images` are for testing the pipeline on single frames.  
 ### Import all the libs needed
-```
+```python
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
@@ -28,7 +28,7 @@ import imageio
 I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image. Thus, objp is just a replicated array of coordinates, and objpoints will be appended with a copy of it every time I successfully detect all chessboard corners in a test image. imgpoints will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.
 I then used the output objpoints and imgpoints to compute the camera calibration and distortion coefficients using the cv2.calibrateCamera() function. I applied this distortion correction to the test image using the cv2.undistort() function 
 ### Convert the chessborad image into gray
-```
+```python
 # Set the number of corners
 nx = 9
 ny = 6
@@ -42,7 +42,7 @@ Xxample of the chessboard image
 ![altext](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/camera_cal/calibration1.jpg)
 
 ### Draw chess board corners
-```
+```python
 ### Calibrate camera
 objpoints = []
 imgpoints = []
@@ -66,7 +66,7 @@ The result image like the following:
 ![altext](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/camera_cali/corners_calibration3.jpg)
 
 ### Apply a distorsion correction to the chessborad image and test image
-```
+```python
 # Comparison of undistorted chessboard image and original image
 undist = cv2.undistort(test_img,mtx,dist,None,mtx)
 plt.figure()
@@ -101,7 +101,7 @@ The result is:
 I used a combination of color and gradient thresholds to generate a binary image.
 Firstly, I calculated sobelx and sobel direction and applied threshold to get the soble binary image. (In the 5th code cell ) Secondly, I select the white and yellow color through RGB thresholds.(In the 6th code cell) Thirdly, I transformed RGB image into HLS image. I applied S and l channel color threshold to get the S and L channel binary image.(In the 7th code cell) Fourthly, I transformed RGB image into LAB image. I applied B channel color threshold to get B channel binary image.(In the 8th code cell) Finally, I combined all the four binary images by ((white and yellow select binary image & l channel binary)) & ((s channel binary & sobel binary)) | (b channel binary)
 ### Sobelx + Direction
-```
+```python
 # Define a function that apllies sobel x, sobel y and sobel direction
 # then takes an absolute value and calculate sobel dir
 # apllies a threshold
@@ -126,7 +126,7 @@ def sobel(img, sobel_kernel=3, sobelx_thresh=(25,255), dir_thresh = (0,np.pi/2))
 ```
 
 ### RGB threshold
-```
+```python
 # Define a function that applies RGB select to select yellow and white color
 def RGB_select(img,  yellow_thresh=0, white_thresh=0):
     R = img[:,:,0]
@@ -141,7 +141,7 @@ def RGB_select(img,  yellow_thresh=0, white_thresh=0):
     return combined_binary
 ```
 ### HLS - S + L channel threshold
-```
+```python
 # Define a function that convert the RGB color space into HLS color space
 # applies thresholds to s and l channel
 def hls_select(img, s_thresh=(0,255), l_thresh=(0,255)):
@@ -156,7 +156,7 @@ def hls_select(img, s_thresh=(0,255), l_thresh=(0,255)):
 ```
 
 ### LAB - B channel threshold
-```
+```python
 # Define a funtion that applies threshold to the B channel of the LAB color space 
 def lab_select(img, b_thresh=(0,255)):
     lab = cv2.cvtColor(img,cv2.COLOR_RGB2Lab)
@@ -168,7 +168,7 @@ def lab_select(img, b_thresh=(0,255)):
     return b_binary   
 ```
 ### Combine all the binary images
-```
+```python
 # Define a funciton to combine all the above binary images
 def binary(img):
     img = cv2.undistort(img,mtx,dist,None,mtx)
@@ -185,7 +185,7 @@ def binary(img):
     return combined_binary
 ```
 ### Test for the test images:
-```
+```python
 # Read in the test images
 # Show the binary image
 images = os.listdir('test_images/')
@@ -221,7 +221,7 @@ The following source and destination points are as follows:
 | 258, 682     | 320, 720      |
 | 1049, 682      | 920, 720    |
 
-```
+```python
 # Define the perspective transform function:
 #1）change the view of the image from camera view into bird view
 #2) change the view of the image from bird view into camera view (inverse perspective transform)
@@ -258,7 +258,7 @@ def warp(img):
 ```
 I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
 
-```
+```python
 # perspective transform example
 img = mpimg.imread('test_images/test1.jpg')
 new_img = np.copy(img)
@@ -284,7 +284,7 @@ plt.savefig('output_images/'+'warp'+'test1')
 
 
 ### Binary warped test images
-```
+```python
 # Read in the test images
 # Show the binary warped image
 images = os.listdir('test_images/')
@@ -322,7 +322,7 @@ For the first frame:
 6) Concatenate all the found pixles
 7) Aplly 2nd polyfit to the pixles found
 
-```
+```python
 # Define a function to implement line extraction using sliding windows
 
 def slidewindow(binary_warped):
@@ -399,7 +399,7 @@ def slidewindow(binary_warped):
 For the next frame:
 I do not need to search the lane lines by sliding windows for that the line position has been determined. All I need to do is to search near the lines found before. After line pixles were found, I applied 2nd polyfit to them.
 
-```
+```python
 # Define a function that can search lines near the fit lines in previous frame
 def lane_find_based_on_prev(binary_warped,left_fit_prev, right_fit_prev):
     # Extract non zero pixles
@@ -429,7 +429,7 @@ def lane_find_based_on_prev(binary_warped,left_fit_prev, right_fit_prev):
     return left_fit_new, right_fit_new, left_lane_inds, right_lane_inds
 ```
 Draw the lines:
-```
+```python
 # Draw lane lines on the test images
 for image in images:
     img = mpimg.imread('test_images/'+image)
@@ -498,7 +498,7 @@ To calculate the position of the vehicle with respect to the center, I take the 
 2) Calculate the middle postion between the left and right lines
 3) Calculate the difference of the above 2.
 If the difference is negative, the car is on the left side of the lane center,and vice versa.
-```
+```python
 # Define curvature and center distance calcuation function
 def curv_centdist_calc(binary_warped, left_lane_inds, right_lane_inds):
     # Define the mmeters per pixle
@@ -540,7 +540,7 @@ def curv_centdist_calc(binary_warped, left_lane_inds, right_lane_inds):
 ```
 
 ## Draw lane lines on the image
-```
+```python
 # Define a function to draw the lane lines on the undistorted images
 def draw_lane(undist, binary_warped, left_fit, right_fit):
     
@@ -566,7 +566,7 @@ def draw_lane(undist, binary_warped, left_fit, right_fit):
     return result
   ```
   ## Draw curvature and center distance on the image
-  ```
+  ```python
   # define a function to put the curvature and center distance on the image
 def draw_data(undist,curvature,center_dist):
     data_img = np.copy(undist)
@@ -587,7 +587,7 @@ def draw_data(undist,curvature,center_dist):
   ```
   
   ### Draw lane line and data on test images
-  ```
+  ```python
   # Draw lane lines on the test images
 for image in images:
     img = mpimg.imread('test_images/'+image)
@@ -657,7 +657,7 @@ The pipeline inludes all the steps:
 6) Draw the data on the above image.
 
 ### Define the line class
-```
+```python
 # Class definition
 class line():
     def __init__(self):
@@ -696,7 +696,7 @@ class line():
                 self.best_fit = np.average(self.current_fit, axis = 0)
 ```
 ### Define the pipe line
-```
+```python
 # Define the pipeline of image processing
 def process(img):
     # Convert the original image into binary warped image
@@ -729,7 +729,7 @@ def process(img):
 ## Video process
 
 For the first video:
-```
+```python
 l_line = line()
 r_line = line()
 video_output1 = 'project_video_output.mp4'
@@ -741,7 +741,7 @@ The result link is-
 [https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/project_video.mp4]
 
 For the chanllenge video:
-```
+```python
 l_line = line()
 r_line = line()
 video_output1 = 'challenge_video_out.mp4'
@@ -753,7 +753,7 @@ The result link is -
 [https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/challenge_video_out.mp4]
 
 For the harder challenge video:
-```
+```python
 l_line = line()
 r_line = line()
 video_output1 = 'harder_challenge_video_out.mp4'
