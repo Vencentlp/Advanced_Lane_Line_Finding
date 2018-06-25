@@ -470,3 +470,288 @@ for image in images:
     plt.ylim(720, 0)  
     plt.savefig('output_images/binary_Lane_lines/'+'Lane_line_withband_'+image)
 ```
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/Lane_line_withband_straight_lines1.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/Lane_line_withband_test2.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/Lane_line_withband_test3.jpg)
+
+
+## Calculate curvature and center distance
+To calculate the curvature,t he steps are as following:
+1)I first transform the coordinate unit of line pixls found from unit pixle into meter.
+2)Then I take a 2nd polyfit for all the points in meter.
+3) I calculated the curvature using the formula in the class
+
+To calculate the position of the vehicle with respect to the center, I take the following steps:
+1) Assume that the car in the middle of the image 
+2) Calculate the middle postion between the left and right lines
+3) Calculate the difference of the above 2.
+If the difference is negative, the car is on the left side of the lane center,and vice versa.
+```
+# Define curvature and center distance calcuation function
+def curv_centdist_calc(binary_warped, left_lane_inds, right_lane_inds):
+    # Define the mmeters per pixle
+    xm_perpix = 3.7/700
+    ym_perpix = 30/720
+    ym_eval = binary_warped.shape[0]*ym_perpix
+    # Initialize calculated curvature and center distance
+    curvature, cent_dist = (0, 0)
+    
+    # Extract non zero pixles index of the binary image
+    nonzero = binary_warped.nonzero()
+    nonzerox = np.array(nonzero[1])
+    nonzeroy = np.array(nonzero[0])
+    
+    leftx = nonzerox[left_lane_inds]
+    lefty = nonzeroy[left_lane_inds]
+    rightx = nonzerox[right_lane_inds]
+    righty = nonzeroy[right_lane_inds]
+    
+    # Use 2nd polyfit to calculate curvature and center distance in 'm'
+    left_fit_cr, right_fit_cr = (None, None)
+    left_curvature, right_curvature = (None, None)
+    if len(leftx) != 0:
+        left_fit_cr = np.polyfit(lefty*ym_perpix, leftx*xm_perpix,2)
+        left_curvature = ((2 * left_fit_cr[0] * ym_eval + left_fit_cr[1]) ** 2 + 1) ** 1.5/np.absolute(2*left_fit_cr[0])
+    if len(rightx) != 0:
+        right_fit_cr = np.polyfit(righty*ym_perpix, rightx*xm_perpix,2)
+        right_curvature = ((1 + (2*right_fit_cr[0]*ym_eval + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
+    if len(leftx) != 0 and len(rightx!=0): 
+        curvature = (left_curvature + right_curvature)/2
+    #Calculate middle postion of the image as the camera postion
+    car_pos = binary_warped.shape[1]/2 * xm_perpix
+    # Calculate the middle position of the lines nearest of the car
+    if len(leftx) != 0 and len(rightx!=0):
+        left_int = left_fit_cr[0] * (ym_eval**2) + left_fit_cr[1] * ym_eval + left_fit_cr[1]
+        right_int = right_fit_cr[0] * (ym_eval**2) + right_fit_cr[1] * ym_eval + right_fit_cr[2]    
+        cent_dist = car_pos - (left_int + right_int)/2
+    return curvature, cent_dist
+```
+
+## Draw lane lines on the image
+```
+# Define a function to draw the lane lines on the undistorted images
+def draw_lane(undist, binary_warped, left_fit, right_fit):
+    
+    if left_fit is None or right_fit is None:
+        return undist
+    
+    ploty = np.linspace(0,binary_warped.shape[0]-1,binary_warped.shape[0])
+    left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
+    right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+    #Creat an image to draw the lines on
+    warp_zero = np.zeros_like(binary_warped).astype(np.uint8)
+    color_warp = np.dstack((warp_zero,warp_zero,warp_zero))
+    # Recast the x and y points into usable format for cv2.fillPoly()
+    pts_left = np.array([np.transpose(np.vstack((left_fitx, ploty)))])
+    pts_right = np.array([np.flipud(np.transpose(np.vstack((right_fitx,ploty))))])
+    pts = np.hstack((pts_left,pts_right))
+    cv2.fillPoly(color_warp, np.int_([pts]), (0,255,0))
+    
+    # Warp the blank back to original image space using inverse perspective matrix (Minv)    
+    _,new_warp = warp(color_warp)
+    #Combine the result with the undistorted image
+    result = cv2.addWeighted(undist, 1, new_warp,0.3,0)
+    return result
+  ```
+  ## Draw curvature and center distance on the image
+  ```
+  # define a function to put the curvature and center distance on the image
+def draw_data(undist,curvature,center_dist):
+    data_img = np.copy(undist)
+    
+    font = cv2.FONT_HERSHEY_DUPLEX
+    text = 'Curve radius: ' + '{:.2f}'.format(curvature) + ' m '
+    #Put the curvature on the image
+    cv2.putText(data_img, text, (35,70), font, 1.5, (200,255,100), 2, cv2.LINE_AA)
+    if center_dist > 0:
+        dir_c = 'right'
+    else:
+        dir_c = 'left'
+    abs_center_dist = abs(center_dist)
+    text = '{:0.3f}'.format(abs_center_dist) + ' m ' + dir_c + ' of center'
+    # Put the center distance on the image
+    cv2.putText(data_img, text, (35,120), font, 1.5, (200,255,100), 2, cv2.LINE_AA)
+    return data_img
+  ```
+  
+  ### Draw lane line and data on test images
+  ```
+  # Draw lane lines on the test images
+for image in images:
+    img = mpimg.imread('test_images/'+image)
+    undist = cv2.undistort(img,mtx,dist,None,mtx)
+    _,binary_warped = warp_binary(img)
+    margin = 100
+    
+    #Creat an output image to draw on
+    out_img = np.dstack((binary_warped,binary_warped,binary_warped))*255
+    # # Fit a second order polynomial using slinding window method 
+    left_fit, right_fit, left_lane_inds, right_lane_inds = slidewindow(binary_warped)
+    #  # Identify the nonzero pixels in x and y within the window 
+    nonzero = binary_warped.nonzero()
+    nonzerox = np.array(nonzero[1])
+    nonzeroy = np.array(nonzero[0])
+    
+    leftx = nonzerox[left_lane_inds]
+    lefty = nonzeroy[left_lane_inds]
+    rightx = nonzerox[right_lane_inds]
+    righty = nonzeroy[right_lane_inds]
+    
+    ploty = np.linspace(0,binary_warped.shape[0]-1,binary_warped.shape[0])
+    left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
+    right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+    out_img[lefty, leftx] = [255,0,0]
+    out_img[righty, rightx] = [0,0,255]
+    # Recast the x and y points into usable format for cv2.fillPoly()  
+    left_line_window1 = np.array([np.transpose(np.vstack([left_fitx - margin, ploty]))])
+    left_line_window2 = np.array([np.flipud(np.transpose(np.vstack([left_fitx + margin, ploty])))])    
+    left_line_pts = np.hstack((left_line_window1, left_line_window2))
+    
+    right_line_window1 = np.array([np.transpose(np.vstack([right_fitx - margin, ploty]))])
+    right_line_window2 = np.array([np.flipud(np.transpose(np.vstack([right_fitx + margin, ploty])))])
+    right_line_pts = np.hstack((right_line_window1, right_line_window2))
+    # Creat a new image to draw on 
+    window_img = np.zeros_like(out_img)
+    # Draw lane lines
+    cv2.fillPoly(window_img, np.int_([left_line_pts]), (0,255,0))
+    cv2.fillPoly(window_img, np.int_([right_line_pts]), (0,255,0))
+    result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
+    
+    
+    lane_line_warp = draw_lane(undist, binary_warped, left_fit, right_fit)
+    
+    # Put curvature and center distance on the image
+    curvature, center_dist = curv_centdist_calc(binary_warped, left_lane_inds, right_lane_inds)
+    data_lane_img = draw_data(lane_line_warp, curvature, center_dist)
+    plt.figure()
+    plt.imshow(data_lane_img)
+    plt.savefig('output_images/binary_Lane_lines/'+'warped_inverse_'+image)
+  ```
+  ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/warped_inverse_test1.jpg)
+  ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/warped_inverse_test2.jpg)
+  ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/warped_inverse_test3.jpg)
+  ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/warped_inverse_test4.jpg)
+  ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/warped_inverse_test5.jpg)
+  ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/warped_inverse_test6.jpg)
+  
+## Pipe line
+I define a class named Line() to store all the line data. 
+The pipeline inludes all the steps:
+1) Undistort the images 
+2) Transform the undistorted image into binary warped image
+3) Detect the left and right line pixls and apply 2nd polyfit to them 
+4) Append the line data to the line class
+5) Draw the lines using best_fit attribute of line classes on the undistorted image.
+6) Draw the data on the above image.
+
+### Define the line class
+```
+# Class definition
+class line():
+    def __init__(self):
+        # was the line detected in the last iteration
+        self.detected = False
+        # polynominal coeeficients averaged over the last n iterations
+        self.best_fit = None
+        # polynominal coefficients for the most recent fit
+        self.current_fit = []
+        # difference in fit coefficients between last and new fits
+        self.diffs = np.array([0,0,0],dtype='float')
+    # Add a fit
+    def add_fit(self,fit):
+        if fit is not None:
+            if self.best_fit is not None:
+                #if a best_fit exists, there will be a comparison between the current and the best fit
+                # If the difference between them is large, we will discard the current fit
+                self.diffs = abs(fit - self.best_fit)
+            if (self.diffs[0] > 0.001 or self.diffs[1] > 1.0 or self.diffs[2] > 150.) and (len(self.current_fit) > 0):
+                self.detected = False
+            else:
+                self.detected = True
+                self.current_fit.append(fit)
+                # Only keep 5 newest fits
+                if len(self.current_fit) > 5:
+                    self.current_fit = self.current_fit[len(self.current_fit)-5:]
+                # best fit is the average of the newest current fits
+                self.best_fit = np.average(self.current_fit, axis = 0)
+                
+        else:
+        # If the new fit is None, the current fits should discard the oldest one
+            self.detected = False
+            if len(self.current_fit) > 0:
+                self.current_fit = self.current_fit[1 : ]
+            if len(self.current_fit) > 0:
+                self.best_fit = np.average(self.current_fit, axis = 0)
+```
+### Define the pipe line
+```
+# Define the pipeline of image processing
+def process(img):
+    # Convert the original image into binary warped image
+    _,binary_warped = warp_binary(img)
+    # Undistort the original image
+    undist = cv2.undistort(img,mtx,dist,None,mtx)
+    # Fit the lines detected
+    # If no line detected in the last iteration, detect lane lines using sliding window method 
+    if not l_line.detected or not r_line.detected:
+        left_fit, right_fit, left_lane_inds, right_lane_inds = slidewindow(binary_warped)
+    # If lines can be found in the last iteration, search the new lines based on the last frame
+    else:
+        left_fit, right_fit, left_lane_inds, right_lane_inds = lane_find_based_on_prev(binary_warped, l_line.best_fit, r_line.best_fit)
+    
+    # Add fit to the line class
+    l_line.add_fit(left_fit)
+    r_line.add_fit(right_fit)
+    
+    
+    # Draw lane lines and put the curvature and center distance on the images
+    if l_line.best_fit is not None and r_line.best_fit is not None:
+        draw_line_img = draw_lane(undist, binary_warped, l_line.best_fit, r_line.best_fit)
+        curvature, center_dist = curv_centdist_calc(binary_warped, left_lane_inds, right_lane_inds)
+        out_img = draw_data(draw_line_img, curvature, center_dist)
+    else:
+        out_img = undist
+    return out_img
+```
+
+## Video process
+
+For the first video:
+```
+l_line = line()
+r_line = line()
+video_output1 = 'project_video_output.mp4'
+video_input1 = VideoFileClip('project_video.mp4')
+processed_video = video_input1.fl_image(process)
+%time processed_video.write_videofile(video_output1, audio=False)
+```
+The result link is-
+[https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/project_video.mp4]
+
+For the chanllenge video:
+```
+l_line = line()
+r_line = line()
+video_output1 = 'challenge_video_out.mp4'
+video_input1 = VideoFileClip('challenge_video.mp4')
+processed_video = video_input1.fl_image(process)
+%time processed_video.write_videofile(video_output1, audio=False)
+```
+The result link is -
+[https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/challenge_video_out.mp4]
+
+For the harder challenge video:
+```
+l_line = line()
+r_line = line()
+video_output1 = 'harder_challenge_video_out.mp4'
+video_input1 = VideoFileClip('harder_challenge_video.mp4')
+processed_video = video_input1.fl_image(process)
+%time processed_video.write_videofile(video_output1, audio=False)
+```
+The result link is-
+[https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/harder_challenge_video_out.mp4]
+
+
+From the result of challenge and harder challenge, we can see that the pipe line can not work well when there is a deep shadow and when the road is complicated.
+To make it more robust, I need to take automatically detect the source four points in perspective transform step. And I need to improve the lane line detection using different color sapce to make the lines more clear.
