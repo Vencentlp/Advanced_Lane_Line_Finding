@@ -434,7 +434,8 @@ Draw the lines:
 for image in images:
     img = mpimg.imread('test_images/'+image)
     undist = cv2.undistort(img,mtx,dist,None,mtx)
-    _,binary_warped = warp_binary(img)
+    combined_binary= binary(img)  
+    binary_warped,_ = warp(combined_binary)
     margin = 100
     
     #Creat an output image to draw on
@@ -502,8 +503,8 @@ If the difference is negative, the car is on the left side of the lane center,an
 # Define curvature and center distance calcuation function
 def curv_centdist_calc(binary_warped, left_lane_inds, right_lane_inds):
     # Define the mmeters per pixle
-    xm_perpix = 3.7/700
-    ym_perpix = 30/720
+    xm_perpix = 3.7/600
+    ym_perpix = 23/720
     ym_eval = binary_warped.shape[0]*ym_perpix
     # Initialize calculated curvature and center distance
     curvature, cent_dist = (0, 0)
@@ -533,7 +534,7 @@ def curv_centdist_calc(binary_warped, left_lane_inds, right_lane_inds):
     car_pos = binary_warped.shape[1]/2 * xm_perpix
     # Calculate the middle position of the lines nearest of the car
     if len(leftx) != 0 and len(rightx!=0):
-        left_int = left_fit_cr[0] * (ym_eval**2) + left_fit_cr[1] * ym_eval + left_fit_cr[1]
+        left_int = left_fit_cr[0] * (ym_eval**2) + left_fit_cr[1] * ym_eval + left_fit_cr[2]
         right_int = right_fit_cr[0] * (ym_eval**2) + right_fit_cr[1] * ym_eval + right_fit_cr[2]    
         cent_dist = car_pos - (left_int + right_int)/2
     return curvature, cent_dist
@@ -592,7 +593,8 @@ def draw_data(undist,curvature,center_dist):
 for image in images:
     img = mpimg.imread('test_images/'+image)
     undist = cv2.undistort(img,mtx,dist,None,mtx)
-    _,binary_warped = warp_binary(img)
+    combined_binary= binary(img)  
+    binary_warped,_ = warp(combined_binary)
     margin = 100
     
     #Creat an output image to draw on
