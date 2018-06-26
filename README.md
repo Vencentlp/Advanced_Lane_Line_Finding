@@ -12,7 +12,7 @@ The goals / steps of this project are the following:
 
 The images for camera calibration are stored in the folder called `camera_cal`.  The images in `test_images` are for testing the pipeline on single frames.  
 ### Import all the libs needed
-```
+```python
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
@@ -28,7 +28,7 @@ import imageio
 I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image. Thus, objp is just a replicated array of coordinates, and objpoints will be appended with a copy of it every time I successfully detect all chessboard corners in a test image. imgpoints will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.
 I then used the output objpoints and imgpoints to compute the camera calibration and distortion coefficients using the cv2.calibrateCamera() function. I applied this distortion correction to the test image using the cv2.undistort() function 
 ### Convert the chessborad image into gray
-```
+```python
 # Set the number of corners
 nx = 9
 ny = 6
@@ -42,7 +42,7 @@ Xxample of the chessboard image
 ![altext](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/camera_cal/calibration1.jpg)
 
 ### Draw chess board corners
-```
+```python
 ### Calibrate camera
 objpoints = []
 imgpoints = []
@@ -66,7 +66,7 @@ The result image like the following:
 ![altext](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/camera_cali/corners_calibration3.jpg)
 
 ### Apply a distorsion correction to the chessborad image and test image
-```
+```python
 # Comparison of undistorted chessboard image and original image
 undist = cv2.undistort(test_img,mtx,dist,None,mtx)
 plt.figure()
@@ -101,7 +101,7 @@ The result is:
 I used a combination of color and gradient thresholds to generate a binary image.
 Firstly, I calculated sobelx and sobel direction and applied threshold to get the soble binary image. (In the 5th code cell ) Secondly, I select the white and yellow color through RGB thresholds.(In the 6th code cell) Thirdly, I transformed RGB image into HLS image. I applied S and l channel color threshold to get the S and L channel binary image.(In the 7th code cell) Fourthly, I transformed RGB image into LAB image. I applied B channel color threshold to get B channel binary image.(In the 8th code cell) Finally, I combined all the four binary images by ((white and yellow select binary image & l channel binary)) & ((s channel binary & sobel binary)) | (b channel binary)
 ### Sobelx + Direction
-```
+```python
 # Define a function that apllies sobel x, sobel y and sobel direction
 # then takes an absolute value and calculate sobel dir
 # apllies a threshold
@@ -126,7 +126,7 @@ def sobel(img, sobel_kernel=3, sobelx_thresh=(25,255), dir_thresh = (0,np.pi/2))
 ```
 
 ### RGB threshold
-```
+```python
 # Define a function that applies RGB select to select yellow and white color
 def RGB_select(img,  yellow_thresh=0, white_thresh=0):
     R = img[:,:,0]
@@ -141,7 +141,7 @@ def RGB_select(img,  yellow_thresh=0, white_thresh=0):
     return combined_binary
 ```
 ### HLS - S + L channel threshold
-```
+```python
 # Define a function that convert the RGB color space into HLS color space
 # applies thresholds to s and l channel
 def hls_select(img, s_thresh=(0,255), l_thresh=(0,255)):
@@ -156,7 +156,7 @@ def hls_select(img, s_thresh=(0,255), l_thresh=(0,255)):
 ```
 
 ### LAB - B channel threshold
-```
+```python
 # Define a funtion that applies threshold to the B channel of the LAB color space 
 def lab_select(img, b_thresh=(0,255)):
     lab = cv2.cvtColor(img,cv2.COLOR_RGB2Lab)
@@ -168,7 +168,7 @@ def lab_select(img, b_thresh=(0,255)):
     return b_binary   
 ```
 ### Combine all the binary images
-```
+```python
 # Define a funciton to combine all the above binary images
 def binary(img):
     img = cv2.undistort(img,mtx,dist,None,mtx)
@@ -185,7 +185,7 @@ def binary(img):
     return combined_binary
 ```
 ### Test for the test images:
-```
+```python
 # Read in the test images
 # Show the binary image
 images = os.listdir('test_images/')
@@ -205,6 +205,10 @@ for image in images:
 The result is:
 ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/binarytest1.jpg)
 ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/binarytest2.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/binarytest3.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/binarytest4.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/binarytest5.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/binarytest6.jpg)
 
 ## Perspective transform
 The code for my perspective transform includes a function called `warp()`. The `warp()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points manually:
@@ -217,7 +221,7 @@ The following source and destination points are as follows:
 | 258, 682     | 320, 720      |
 | 1049, 682      | 920, 720    |
 
-```
+```python
 # Define the perspective transform function:
 #1）change the view of the image from camera view into bird view
 #2) change the view of the image from bird view into camera view (inverse perspective transform)
@@ -254,7 +258,7 @@ def warp(img):
 ```
 I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
 
-```
+```python
 # perspective transform example
 img = mpimg.imread('test_images/test1.jpg')
 new_img = np.copy(img)
@@ -278,8 +282,9 @@ plt.savefig('output_images/'+'warp'+'test1')
 ```
 ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/warptest1.png)
 
+
 ### Binary warped test images
-```
+```python
 # Read in the test images
 # Show the binary warped image
 images = os.listdir('test_images/')
@@ -300,6 +305,10 @@ for image in images:
 ```
 ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/warptest1.jpg)
 ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/warptest2.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/warptest3.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/warptest4.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/warptest5.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary/warptest6.jpg)
 
 ## Detect lane pixels and fit to find the lane boundary.
 To get the lane lines image like the above one, I need to take some steps to dect the pixles in the line region.
@@ -313,7 +322,7 @@ For the first frame:
 6) Concatenate all the found pixles
 7) Aplly 2nd polyfit to the pixles found
 
-```
+```python
 # Define a function to implement line extraction using sliding windows
 
 def slidewindow(binary_warped):
@@ -390,7 +399,7 @@ def slidewindow(binary_warped):
 For the next frame:
 I do not need to search the lane lines by sliding windows for that the line position has been determined. All I need to do is to search near the lines found before. After line pixles were found, I applied 2nd polyfit to them.
 
-```
+```python
 # Define a function that can search lines near the fit lines in previous frame
 def lane_find_based_on_prev(binary_warped,left_fit_prev, right_fit_prev):
     # Extract non zero pixles
@@ -420,7 +429,7 @@ def lane_find_based_on_prev(binary_warped,left_fit_prev, right_fit_prev):
     return left_fit_new, right_fit_new, left_lane_inds, right_lane_inds
 ```
 Draw the lines:
-```
+```python
 # Draw lane lines on the test images
 for image in images:
     img = mpimg.imread('test_images/'+image)
@@ -470,3 +479,291 @@ for image in images:
     plt.ylim(720, 0)  
     plt.savefig('output_images/binary_Lane_lines/'+'Lane_line_withband_'+image)
 ```
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/Lane_line_withband_straight_lines1.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/Lane_line_withband_test2.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/Lane_line_withband_test3.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/Lane_line_withband_test4.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/Lane_line_withband_test5.jpg)
+![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/Lane_line_withband_test6.jpg)
+
+
+## Calculate curvature and center distance
+To calculate the curvature,t he steps are as following:
+1)I first transform the coordinate unit of line pixls found from unit pixle into meter.
+2)Then I take a 2nd polyfit for all the points in meter.
+3) I calculated the curvature using the formula in the class
+
+To calculate the position of the vehicle with respect to the center, I take the following steps:
+1) Assume that the car in the middle of the image 
+2) Calculate the middle postion between the left and right lines
+3) Calculate the difference of the above 2.
+If the difference is negative, the car is on the left side of the lane center,and vice versa.
+```python
+# Define curvature and center distance calcuation function
+def curv_centdist_calc(binary_warped, left_lane_inds, right_lane_inds):
+    # Define the mmeters per pixle
+    xm_perpix = 3.7/700
+    ym_perpix = 30/720
+    ym_eval = binary_warped.shape[0]*ym_perpix
+    # Initialize calculated curvature and center distance
+    curvature, cent_dist = (0, 0)
+    
+    # Extract non zero pixles index of the binary image
+    nonzero = binary_warped.nonzero()
+    nonzerox = np.array(nonzero[1])
+    nonzeroy = np.array(nonzero[0])
+    
+    leftx = nonzerox[left_lane_inds]
+    lefty = nonzeroy[left_lane_inds]
+    rightx = nonzerox[right_lane_inds]
+    righty = nonzeroy[right_lane_inds]
+    
+    # Use 2nd polyfit to calculate curvature and center distance in 'm'
+    left_fit_cr, right_fit_cr = (None, None)
+    left_curvature, right_curvature = (None, None)
+    if len(leftx) != 0:
+        left_fit_cr = np.polyfit(lefty*ym_perpix, leftx*xm_perpix,2)
+        left_curvature = ((2 * left_fit_cr[0] * ym_eval + left_fit_cr[1]) ** 2 + 1) ** 1.5/np.absolute(2*left_fit_cr[0])
+    if len(rightx) != 0:
+        right_fit_cr = np.polyfit(righty*ym_perpix, rightx*xm_perpix,2)
+        right_curvature = ((1 + (2*right_fit_cr[0]*ym_eval + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
+    if len(leftx) != 0 and len(rightx!=0): 
+        curvature = (left_curvature + right_curvature)/2
+    #Calculate middle postion of the image as the camera postion
+    car_pos = binary_warped.shape[1]/2 * xm_perpix
+    # Calculate the middle position of the lines nearest of the car
+    if len(leftx) != 0 and len(rightx!=0):
+        left_int = left_fit_cr[0] * (ym_eval**2) + left_fit_cr[1] * ym_eval + left_fit_cr[1]
+        right_int = right_fit_cr[0] * (ym_eval**2) + right_fit_cr[1] * ym_eval + right_fit_cr[2]    
+        cent_dist = car_pos - (left_int + right_int)/2
+    return curvature, cent_dist
+```
+
+## Draw lane lines on the image
+```python
+# Define a function to draw the lane lines on the undistorted images
+def draw_lane(undist, binary_warped, left_fit, right_fit):
+    
+    if left_fit is None or right_fit is None:
+        return undist
+    
+    ploty = np.linspace(0,binary_warped.shape[0]-1,binary_warped.shape[0])
+    left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
+    right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+    #Creat an image to draw the lines on
+    warp_zero = np.zeros_like(binary_warped).astype(np.uint8)
+    color_warp = np.dstack((warp_zero,warp_zero,warp_zero))
+    # Recast the x and y points into usable format for cv2.fillPoly()
+    pts_left = np.array([np.transpose(np.vstack((left_fitx, ploty)))])
+    pts_right = np.array([np.flipud(np.transpose(np.vstack((right_fitx,ploty))))])
+    pts = np.hstack((pts_left,pts_right))
+    cv2.fillPoly(color_warp, np.int_([pts]), (0,255,0))
+    
+    # Warp the blank back to original image space using inverse perspective matrix (Minv)    
+    _,new_warp = warp(color_warp)
+    #Combine the result with the undistorted image
+    result = cv2.addWeighted(undist, 1, new_warp,0.3,0)
+    return result
+  ```
+  ## Draw curvature and center distance on the image
+  ```python
+  # define a function to put the curvature and center distance on the image
+def draw_data(undist,curvature,center_dist):
+    data_img = np.copy(undist)
+    
+    font = cv2.FONT_HERSHEY_DUPLEX
+    text = 'Curve radius: ' + '{:.2f}'.format(curvature) + ' m '
+    #Put the curvature on the image
+    cv2.putText(data_img, text, (35,70), font, 1.5, (200,255,100), 2, cv2.LINE_AA)
+    if center_dist > 0:
+        dir_c = 'right'
+    else:
+        dir_c = 'left'
+    abs_center_dist = abs(center_dist)
+    text = '{:0.3f}'.format(abs_center_dist) + ' m ' + dir_c + ' of center'
+    # Put the center distance on the image
+    cv2.putText(data_img, text, (35,120), font, 1.5, (200,255,100), 2, cv2.LINE_AA)
+    return data_img
+  ```
+  
+  ### Draw lane line and data on test images
+  ```python
+  # Draw lane lines on the test images
+for image in images:
+    img = mpimg.imread('test_images/'+image)
+    undist = cv2.undistort(img,mtx,dist,None,mtx)
+    _,binary_warped = warp_binary(img)
+    margin = 100
+    
+    #Creat an output image to draw on
+    out_img = np.dstack((binary_warped,binary_warped,binary_warped))*255
+    # # Fit a second order polynomial using slinding window method 
+    left_fit, right_fit, left_lane_inds, right_lane_inds = slidewindow(binary_warped)
+    #  # Identify the nonzero pixels in x and y within the window 
+    nonzero = binary_warped.nonzero()
+    nonzerox = np.array(nonzero[1])
+    nonzeroy = np.array(nonzero[0])
+    
+    leftx = nonzerox[left_lane_inds]
+    lefty = nonzeroy[left_lane_inds]
+    rightx = nonzerox[right_lane_inds]
+    righty = nonzeroy[right_lane_inds]
+    
+    ploty = np.linspace(0,binary_warped.shape[0]-1,binary_warped.shape[0])
+    left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
+    right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+    out_img[lefty, leftx] = [255,0,0]
+    out_img[righty, rightx] = [0,0,255]
+    # Recast the x and y points into usable format for cv2.fillPoly()  
+    left_line_window1 = np.array([np.transpose(np.vstack([left_fitx - margin, ploty]))])
+    left_line_window2 = np.array([np.flipud(np.transpose(np.vstack([left_fitx + margin, ploty])))])    
+    left_line_pts = np.hstack((left_line_window1, left_line_window2))
+    
+    right_line_window1 = np.array([np.transpose(np.vstack([right_fitx - margin, ploty]))])
+    right_line_window2 = np.array([np.flipud(np.transpose(np.vstack([right_fitx + margin, ploty])))])
+    right_line_pts = np.hstack((right_line_window1, right_line_window2))
+    # Creat a new image to draw on 
+    window_img = np.zeros_like(out_img)
+    # Draw lane lines
+    cv2.fillPoly(window_img, np.int_([left_line_pts]), (0,255,0))
+    cv2.fillPoly(window_img, np.int_([right_line_pts]), (0,255,0))
+    result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
+    
+    
+    lane_line_warp = draw_lane(undist, binary_warped, left_fit, right_fit)
+    
+    # Put curvature and center distance on the image
+    curvature, center_dist = curv_centdist_calc(binary_warped, left_lane_inds, right_lane_inds)
+    data_lane_img = draw_data(lane_line_warp, curvature, center_dist)
+    plt.figure()
+    plt.imshow(data_lane_img)
+    plt.savefig('output_images/binary_Lane_lines/'+'warped_inverse_'+image)
+  ```
+  ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/warped_inverse_test1.jpg)
+  ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/warped_inverse_test2.jpg)
+  ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/warped_inverse_test3.jpg)
+  ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/warped_inverse_test4.jpg)
+  ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/warped_inverse_test5.jpg)
+  ![](https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/output_images/binary_Lane_lines/warped_inverse_test6.jpg)
+  
+## Pipe line
+I define a class named Line() to store all the line data. 
+The pipeline inludes all the steps:
+1) Undistort the images 
+2) Transform the undistorted image into binary warped image
+3) Detect the left and right line pixls and apply 2nd polyfit to them 
+4) Append the line data to the line class
+5) Draw the lines using best_fit attribute of line classes on the undistorted image.
+6) Draw the data on the above image.
+
+### Define the line class
+```python
+# Class definition
+class line():
+    def __init__(self):
+        # was the line detected in the last iteration
+        self.detected = False
+        # polynominal coeeficients averaged over the last n iterations
+        self.best_fit = None
+        # polynominal coefficients for the most recent fit
+        self.current_fit = []
+        # difference in fit coefficients between last and new fits
+        self.diffs = np.array([0,0,0],dtype='float')
+    # Add a fit
+    def add_fit(self,fit):
+        if fit is not None:
+            if self.best_fit is not None:
+                #if a best_fit exists, there will be a comparison between the current and the best fit
+                # If the difference between them is large, we will discard the current fit
+                self.diffs = abs(fit - self.best_fit)
+            if (self.diffs[0] > 0.001 or self.diffs[1] > 1.0 or self.diffs[2] > 150.) and (len(self.current_fit) > 0):
+                self.detected = False
+            else:
+                self.detected = True
+                self.current_fit.append(fit)
+                # Only keep 5 newest fits
+                if len(self.current_fit) > 5:
+                    self.current_fit = self.current_fit[len(self.current_fit)-5:]
+                # best fit is the average of the newest current fits
+                self.best_fit = np.average(self.current_fit, axis = 0)
+                
+        else:
+        # If the new fit is None, the current fits should discard the oldest one
+            self.detected = False
+            if len(self.current_fit) > 0:
+                self.current_fit = self.current_fit[1 : ]
+            if len(self.current_fit) > 0:
+                self.best_fit = np.average(self.current_fit, axis = 0)
+```
+### Define the pipe line
+```python
+# Define the pipeline of image processing
+def process(img):
+    # Convert the original image into binary warped image
+    _,binary_warped = warp_binary(img)
+    # Undistort the original image
+    undist = cv2.undistort(img,mtx,dist,None,mtx)
+    # Fit the lines detected
+    # If no line detected in the last iteration, detect lane lines using sliding window method 
+    if not l_line.detected or not r_line.detected:
+        left_fit, right_fit, left_lane_inds, right_lane_inds = slidewindow(binary_warped)
+    # If lines can be found in the last iteration, search the new lines based on the last frame
+    else:
+        left_fit, right_fit, left_lane_inds, right_lane_inds = lane_find_based_on_prev(binary_warped, l_line.best_fit, r_line.best_fit)
+    
+    # Add fit to the line class
+    l_line.add_fit(left_fit)
+    r_line.add_fit(right_fit)
+    
+    
+    # Draw lane lines and put the curvature and center distance on the images
+    if l_line.best_fit is not None and r_line.best_fit is not None:
+        draw_line_img = draw_lane(undist, binary_warped, l_line.best_fit, r_line.best_fit)
+        curvature, center_dist = curv_centdist_calc(binary_warped, left_lane_inds, right_lane_inds)
+        out_img = draw_data(draw_line_img, curvature, center_dist)
+    else:
+        out_img = undist
+    return out_img
+```
+
+## Video process
+
+For the first video:
+```python
+l_line = line()
+r_line = line()
+video_output1 = 'project_video_output.mp4'
+video_input1 = VideoFileClip('project_video.mp4')
+processed_video = video_input1.fl_image(process)
+%time processed_video.write_videofile(video_output1, audio=False)
+```
+The result link is-
+[https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/project_video.mp4]
+
+For the chanllenge video:
+```python
+l_line = line()
+r_line = line()
+video_output1 = 'challenge_video_out.mp4'
+video_input1 = VideoFileClip('challenge_video.mp4')
+processed_video = video_input1.fl_image(process)
+%time processed_video.write_videofile(video_output1, audio=False)
+```
+The result link is -
+[https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/challenge_video_out.mp4]
+
+For the harder challenge video:
+```python
+l_line = line()
+r_line = line()
+video_output1 = 'harder_challenge_video_out.mp4'
+video_input1 = VideoFileClip('harder_challenge_video.mp4')
+processed_video = video_input1.fl_image(process)
+%time processed_video.write_videofile(video_output1, audio=False)
+```
+The result link is-
+[https://github.com/Vencentlp/Advanced_Lane_Line_Finding/blob/master/harder_challenge_video_out.mp4]
+
+
+From the result of challenge and harder challenge, we can see that the pipe line can not work well when there is a deep shadow and when the road is complicated.
+To make it more robust, I need to take automatically detect the source four points in perspective transform step. And I need to improve the lane line detection using different color sapce to make the lines more clear.

@@ -145,5 +145,5 @@ The pipeline inludes all the steps:
 5) Draw the lines using best_fit attribute of line classes on the undistorted image.
 6) Draw the data on the above image.
 
-For the above approach, it fails when there is deep shallow and the line is much unclear.
+From the result of challenge and harder challenge, we can see that the pipe line can not work well when there is a deep shadow and the road is complicated.
 To make it more robust, I need to take automatically detect the source four points in perspective transform step. And I need to improve the lane line detection using different color sapce to make the lines more clear.
